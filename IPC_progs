@@ -1,0 +1,33 @@
+//Write a C program to implement IPC shared memory for Sum of square of 'n' natural numbers.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#define SHM_SIZE sizeof(int)
+int main() {
+ int n, shmid, *shm, sum = 0;
+ printf("Enter the value of 'n': ");
+ scanf("%d", &n);
+ key_t key = ftok(".", 's');
+ shmid = shmget(key, SHM_SIZE, IPC_CREAT | 0666);
+ if (shmid == -1) {
+ perror("shmget");
+ exit(EXIT_FAILURE);
+ }
+ shm = (int*)shmat(shmid, NULL, 0);
+ if (shm == (int*)-1) {
+ perror("shmat");
+ exit(EXIT_FAILURE);
+ }
+ for (int i = 1; i <= n; i++) {
+ sum += i * i;
+ }
+ *shm = sum;
+ shmdt(shm);
+ printf("Sum of squares of %d natural numbers: %d\n", n, sum);
+ shmctl(shmid, IPC_RMID, NULL);
+ return 0;
+}
