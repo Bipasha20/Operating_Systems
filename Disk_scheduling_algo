@@ -1,0 +1,172 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+typedef struct Disk {
+ int position;
+ bool visited;
+} Disk;
+int absDiff(int a, int b) {
+ return abs(a - b);
+}
+int findSSTFIndex(Disk disk[], int n, int head) {
+ int minDiff = 999999;
+ int index = -1;
+ for (int i = 0; i < n; i++) {
+ if (!disk[i].visited && absDiff(disk[i].position, head) < minDiff) {
+ minDiff = absDiff(disk[i].position, head);
+ index = i;
+ }
+ }
+ return index;
+}
+void fcfs(Disk disk[], int n, int head) {
+ int totalMovement = 0;
+ printf("FCFS Disk Scheduling:\n");
+ for (int i = 0; i < n; i++) {
+ totalMovement += absDiff(disk[i].position, head);
+ head = disk[i].position;
+ printf("Move head to %d\n", head);
+Name: Bipasha Guha
+Registration No.: 21BIT0032
+ }
+ printf("Total head movement: %d\n\n", totalMovement);
+}
+void sstf(Disk disk[], int n, int head) {
+ int totalMovement = 0;
+ printf("SSTF Disk Scheduling:\n");
+ for (int i = 0; i < n; i++) {
+ int index = findSSTFIndex(disk, n, head);
+ disk[index].visited = true;
+ totalMovement += absDiff(disk[index].position, head);
+ head = disk[index].position;
+ printf("Move head to %d\n", head);
+ }
+ printf("Total head movement: %d\n\n", totalMovement);
+}
+void scan(Disk disk[], int n, int head, int direction) {
+ int totalMovement = 0;
+ printf("SCAN Disk Scheduling:\n");
+ int closestIndex = -1;
+ int closestDiff = 999999;
+ for (int i = 0; i < n; i++) {
+ int diff = absDiff(disk[i].position, head);
+ if (!disk[i].visited && ((direction > 0 && disk[i].position >= head) || (direction < 0 && 
+disk[i].position <= head))) {
+ if (diff < closestDiff) {
+ closestDiff = diff;
+ closestIndex = i;
+ }
+ }
+ }
+ if (closestIndex != -1) {
+ totalMovement += closestDiff;
+ head = disk[closestIndex].position;
+ disk[closestIndex].visited = true;
+ printf("Move head to %d\n", head);
+ }
+ if (direction > 0) {
+ printf("Move head to 0\n");
+ totalMovement += head;
+ head = 0;
+ } else {
+ printf("Move head to 199\n");
+ totalMovement += 150 - head;
+ head = 150;
+Name: Bipasha Guha
+Registration No.: 21BIT0032
+ }
+ while (true) {
+ closestIndex = -1;
+ closestDiff = 999999;
+ for (int i = 0; i < n; i++) {
+ int diff = absDiff(disk[i].position, head);
+ if (!disk[i].visited && ((direction > 0 && disk[i].position >= head) || (direction < 0 
+&& disk[i].position <= head))) {
+ if (diff < closestDiff) {
+ closestDiff = diff;
+ closestIndex = i;
+ }
+ }
+ }
+ if (closestIndex == -1)
+ break;
+ totalMovement += closestDiff;
+ head = disk[closestIndex].position;
+ disk[closestIndex].visited = true;
+ printf("Move head to %d\n", head);
+ }
+ printf("Total head movement: %d\n\n", totalMovement);
+}
+void cscan(Disk disk[], int n, int head) {
+ int totalMovement = 0;
+ printf("C-SCAN Disk Scheduling:\n");
+ int closestIndex = -1;
+ int closestDiff = 999999;
+ for (int i = 0; i < n; i++) {
+ int diff = absDiff(disk[i].position, head);
+ if (!disk[i].visited && disk[i].position >= head) {
+ if (diff < closestDiff) {
+ closestDiff = diff;
+ closestIndex = i;
+ }
+ }
+ }
+ if (closestIndex != -1) {
+ totalMovement += closestDiff;
+ head = disk[closestIndex].position;
+Name: Bipasha Guha
+Registration No.: 21BIT0032
+ disk[closestIndex].visited = true;
+ printf("Move head to %d\n", head);
+ } else {
+ printf("Move head to 150\n");
+ totalMovement += 150 - head;
+ head = 150;
+ printf("Move head to 0\n");
+ totalMovement += 150;
+ head = 0;
+ }
+ while (true) {
+ closestIndex = -1;
+ closestDiff = 999999;
+ for (int i = 0; i < n; i++) {
+ int diff = absDiff(disk[i].position, head);
+ if (!disk[i].visited && disk[i].position >= head) {
+ if (diff < closestDiff) {
+ closestDiff = diff;
+ closestIndex = i;
+ }
+ }
+ }
+ if (closestIndex == -1)
+ break;
+ totalMovement += closestDiff;
+ head = disk[closestIndex].position;
+ disk[closestIndex].visited = true;
+ printf("Move head to %d\n", head);
+ }
+ printf("Total head movement: %d\n\n", totalMovement);
+}
+int main() {
+ 
+ Disk disk[] = {
+ {14, false},
+ {0, false},
+ {20, false},
+ {56, false},
+ {75, false},
+ {88, false},
+ {120, false},
+ {127, false},
+ {6, false},
+ {145, false}
+Name: Bipasha Guha
+Registration No.: 21BIT0032
+ };
+ int n = sizeof(disk) / sizeof(disk[0]);
+ int head = 50; 
+ fcfs(disk, n, head);
+ sstf(disk, n, head);
+ scan(disk, n, head, 1); 
+ cscan(disk, n, head);
+ return 0;
