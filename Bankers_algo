@@ -1,0 +1,80 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_PROCESS 10
+#define MAX_RESOURCES 10
+int main()
+{
+ int available[MAX_RESOURCES];
+ int maximum[MAX_PROCESS][MAX_RESOURCES];
+ int allocation[MAX_PROCESS][MAX_RESOURCES];
+ int need[MAX_PROCESS][MAX_RESOURCES];
+ bool finished[MAX_PROCESS];
+ int safeSequence[MAX_PROCESS];
+ int numProcesses, numResources;
+ printf("Enter the number of processes: ");
+ scanf("%d", &numProcesses);
+ printf("Enter the number of resources: ");
+ scanf("%d", &numResources);
+ printf("Enter the available resources: ");
+ for (int i = 0; i < numResources; i++)
+ scanf("%d", &available[i]);
+ printf("Enter the maximum allocation matrix:\n");
+ for (int i = 0; i < numProcesses; i++)
+ {
+ for (int j = 0; j < numResources; j++)
+ scanf("%d", &maximum[i][j]);
+ }
+ printf("Enter the allocation matrix:\n");
+ for (int i = 0; i < numProcesses; i++)
+ {
+ for (int j = 0; j < numResources; j++)
+ {
+ scanf("%d", &allocation[i][j]);
+ need[i][j] = maximum[i][j] - allocation[i][j];
+ }
+ finished[i] = false;
+ }
+ int count = 0;
+ while (count < numProcesses)
+ {
+ bool found = false;
+ for (int i = 0; i < numProcesses; i++)
+ {
+ if (!finished[i])
+ {
+ bool safe = true;
+ for (int j = 0; j < numResources; j++)
+ {
+ if (need[i][j] > available[j])
+ {
+ safe = false;
+ break;
+ }
+ }
+ if (safe)
+ {
+ for (int j = 0; j < numResources; j++)
+ available[j] += allocation[i][j];
+ safeSequence[count] = i;
+ finished[i] = true;
+ count++;
+ found = true;
+ }
+ }
+ }
+ if (!found)
+ break;
+ }
+ if (count == numProcesses)
+ {
+ printf("System is in a safe state.\nSafe sequence: ");
+ for (int i = 0; i < numProcesses; i++)
+ printf("%d ", safeSequence[i]);
+ printf("\n");
+ }
+ else
+ {
+ printf("System is in an unsafe state. Deadlock detected.\n");
+ }
+ return 0;
+}
