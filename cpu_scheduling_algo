@@ -1,0 +1,162 @@
+//FCFS, SJF & SRTF, PRIORITY, ROUND ROBIN
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+typedef struct Process {
+ int processId;
+ int burstTime;
+ int arrivalTime;
+ int priority;
+} Process;
+void swap(Process *a, Process *b) {
+ Process temp = *a;
+ *a = *b;
+ *b = temp;
+}
+void fcfs(Process *processes, int numProcesses) {
+ int waitingTime = 0;
+ int turnaroundTime = 0;
+ for (int i = 0; i < numProcesses; i++) {
+ if (i > 0) {
+ waitingTime += processes[i - 1].burstTime;
+ turnaroundTime += processes[i - 1].burstTime;
+ }
+ printf("Process %d\nWaiting Time: %d\nTurnaround Time: %d\n\n", processes[i].processId, 
+waitingTime, turnaroundTime);
+ }
+ double avgWaitingTime = (double) waitingTime / numProcesses;
+ double avgTurnaroundTime = (double) turnaroundTime / numProcesses;
+ printf("Average Waiting Time: %.2lf\nAverage Turnaround Time: %.2lf\n", avgWaitingTime, 
+avgTurnaroundTime);
+}
+void sjf(Process *processes, int numProcesses) {
+ for (int i = 0; i < numProcesses - 1; i++) {
+ for (int j = 0; j < numProcesses - i - 1; j++) {
+ if (processes[j].burstTime > processes[j + 1].burstTime) {
+ swap(&processes[j], &processes[j + 1]);
+ }
+ }
+ }
+ fcfs(processes, numProcesses);
+}
+void srtf(Process *processes, int numProcesses) {
+ int remainingTime[numProcesses];
+ for (int i = 0; i < numProcesses; i++) {
+ remainingTime[i] = processes[i].burstTime;
+ }
+ int complete = 0;
+ int time = 0;
+ int minRemainingTime = INT_MAX;
+ int shortest = 0;
+ int finishTime;
+ int waitingTime = 0;
+ int turnaroundTime = 0;
+ int found = 0;
+ while (complete != numProcesses) {
+ for (int i = 0; i < numProcesses; i++) {
+ if (processes[i].arrivalTime <= time && remainingTime[i] < minRemainingTime && 
+remainingTime[i] > 0) {
+ minRemainingTime = remainingTime[i];
+ shortest = i;
+ found = 1;
+ }
+ }
+ if (found == 0) {
+ time++;
+ continue;
+ }
+ remainingTime[shortest]--;
+ minRemainingTime = remainingTime[shortest];
+ if (minRemainingTime == 0) {
+ minRemainingTime = INT_MAX;
+ }
+ if (remainingTime[shortest] == 0) {
+ complete++;
+ finishTime = time + 1;
+ waitingTime += finishTime - processes[shortest].burstTime - processes[shortest].arrivalTime;
+ turnaroundTime += finishTime - processes[shortest].arrivalTime;
+ printf("Process %d\nWaiting Time: %d\nTurnaround Time: %d\n\n", 
+processes[shortest].processId, finishTime - processes[shortest].burstTime -
+processes[shortest].arrivalTime, finishTime - processes[shortest].arrivalTime);
+ }
+ time++;
+ }
+ double avgWaitingTime = (double) waitingTime / numProcesses;
+ double avgTurnaroundTime = (double) turnaroundTime / numProcesses;
+ printf("Average Waiting Time: %.2lf\nAverage Turnaround Time: %.2lf\n", avgWaitingTime, 
+avgTurnaroundTime);
+}
+void priority(Process *processes, int numProcesses) {
+ for (int i = 0; i < numProcesses - 1; i++) {
+ for (int j = 0; j < numProcesses - i - 1; j++) {
+ if (processes[j].priority > processes[j + 1].priority) {
+ swap(&processes[j], &processes[j + 1]);
+ }
+ }
+ }
+ fcfs(processes, numProcesses);
+}
+void roundRobin(Process *processes, int numProcesses, int timeQuantum) {
+ int remainingTime[numProcesses];
+ for (int i = 0; i < numProcesses; i++) {
+ remainingTime[i] = processes[i].burstTime;
+ }
+ int complete = 0;
+ int time = 0;
+ int waitingTime = 0;
+ int turnaroundTime = 0;
+ while (complete != numProcesses) {
+ for (int i = 0; i < numProcesses; i++) {
+ if (remainingTime[i] > 0) {
+ if (remainingTime[i] <= timeQuantum) {
+ time += remainingTime[i];
+ remainingTime[i] = 0;
+ complete++;
+ waitingTime += time - processes[i].burstTime - processes[i].arrivalTime;
+ turnaroundTime += time - processes[i].arrivalTime;
+ printf("Process %d\nWaiting Time: %d\nTurnaround Time: %d\n\n", 
+processes[i].processId, time - processes[i].burstTime - processes[i].arrivalTime, time -
+processes[i].arrivalTime);
+ } else {
+ time += timeQuantum;
+ remainingTime[i] -= timeQuantum;
+ }
+ }
+ }
+ }
+ double avgWaitingTime = (double) waitingTime / numProcesses;
+ double avgTurnaroundTime = (double) turnaroundTime / numProcesses;
+ printf("Average Waiting Time: %.2lf\nAverage Turnaround Time: %.2lf\n", avgWaitingTime, 
+avgTurnaroundTime);
+}
+int main() {
+ int numProcesses;
+ printf("Enter the number of processes: ");
+ scanf("%d", &numProcesses);
+ Process processes[numProcesses];
+ for (int i = 0; i < numProcesses; i++) {
+ printf("Process %d:\n", i + 1);
+ printf("Enter Burst Time: ");
+ scanf("%d", &processes[i].burstTime);
+ printf("Enter Arrival Time: ");
+ scanf("%d", &processes[i].arrivalTime);
+ printf("Enter Priority: ");
+ scanf("%d", &processes[i].priority);
+ processes[i].processId = i + 1;
+ printf("\n");
+ }
+ printf("\nFCFS Scheduling\n");
+ fcfs(processes, numProcesses);
+ printf("\nSJF Scheduling\n");
+ sjf(processes, numProcesses);
+ printf("\nSRTF Scheduling\n");
+ srtf(processes, numProcesses);
+ printf("\nPriority Scheduling\n");
+ priority(processes, numProcesses);
+ int timeQuantum;
+ printf("\nEnter Time Quantum for Round Robin Scheduling: ");
+ scanf("%d", &timeQuantum);
+ printf("\nRound Robin Scheduling\n");
+ roundRobin(processes, numProcesses, timeQuantum);
+ return 0;
+}
